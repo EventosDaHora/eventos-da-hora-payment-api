@@ -38,13 +38,13 @@ public class PaymentService {
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
 			return orderDTO;
 		}
+		
+		log.info(orderDTO.toString());
 		return orderDTO;
 	}
 	
 	@Transactional
 	public OrderDTO pagarTicket(OrderDTO orderDTO) {
-		System.out.println("---- Realizando Pagamento: ");
-		System.out.println(orderDTO);
 		PaymentStatus paymentTemp;
 		
 		if (verifyPayment(orderDTO)) {
@@ -59,11 +59,12 @@ public class PaymentService {
 		
 		orderDTO.getPayment().setDtCreate(LocalDateTime.now());
 		orderDTO.getPayment().setPaymentStatus(paymentTemp);
-		if(paymentTemp.equals(PaymentStatus.PAGO)) {
+		if(PaymentStatus.PAGO.equals(paymentTemp)) {
 			orderDTO.getPayment().setDtPayment(LocalDateTime.now());
 		}
 		orderDTO.getPayment().persist();
 		
+		log.info(orderDTO.toString());
 		return orderDTO;
 	}
 	
