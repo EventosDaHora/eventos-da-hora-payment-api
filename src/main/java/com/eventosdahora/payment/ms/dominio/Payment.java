@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
 @Builder
@@ -35,6 +36,7 @@ public class Payment extends PanacheEntity {
     public PaymentType paymentType;
     
     public Payment() {
+        this.paymentId = new Date().getTime();
         this.paymentStatus = PaymentStatus.CRIADO;
     }
     
