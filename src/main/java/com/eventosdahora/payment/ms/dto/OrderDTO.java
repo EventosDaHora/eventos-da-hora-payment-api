@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,7 +21,7 @@ public class OrderDTO {
 	
 	private Long orderId;
 	
-	private LocalDate createdDate;
+	private LocalDateTime createdDate;
 	
 	private OrderState orderState;
 	
