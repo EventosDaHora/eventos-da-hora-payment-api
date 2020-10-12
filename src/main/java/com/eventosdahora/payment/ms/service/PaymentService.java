@@ -32,7 +32,7 @@ public class PaymentService {
 	@Transactional
 	private OrderDTO restaurarPagarTicket(OrderDTO orderDTO) {
 		try {
-			orderDTO.getPayment().delete();
+			Payment.deleteById(orderDTO.getPayment().getPaymentId());
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
 		} catch (PersistenceException pe) {
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
@@ -45,25 +45,28 @@ public class PaymentService {
 	
 	@Transactional
 	public OrderDTO pagarTicket(OrderDTO orderDTO) {
-		PaymentStatus paymentTemp;
+		PaymentStatus paymentStatus;
+		Payment payment = new Payment(orderDTO.getPayment().getVlAmount(), orderDTO.getPayment().getPaymentType());
 		
 		if (verifyPayment(orderDTO)) {
-			paymentTemp = PaymentStatus.PAGO;
+			paymentStatus = PaymentStatus.PAGO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_APROVADO);
 			System.out.println("---- Pagamento APROVADO ");
 		} else {
-			paymentTemp = PaymentStatus.PAGO_REJEITADO;
+			paymentStatus = PaymentStatus.PAGO_REJEITADO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_NEGADO);
 			System.out.println("---- Pagamento REPROVADO ");
 		}
 		
-		orderDTO.getPayment().setDtCreate(LocalDateTime.now());
-		orderDTO.getPayment().setPaymentStatus(paymentTemp);
-		if(PaymentStatus.PAGO.equals(paymentTemp)) {
-			orderDTO.getPayment().setDtPayment(LocalDateTime.now());
+		payment.setDtCreate(LocalDateTime.now());
+		payment.setPaymentStatus(paymentStatus);
+		if(PaymentStatus.PAGO.equals(paymentStatus)) {
+			payment.setDtPayment(LocalDateTime.now());
 		}
-		orderDTO.getPayment().persist();
 		
+		payment.persist();
+		
+		orderDTO.getPayment().setPaymentId(payment.getPaymentId());
 		log.info(orderDTO.toString());
 		return orderDTO;
 	}

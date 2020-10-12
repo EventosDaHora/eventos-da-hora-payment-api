@@ -40,5 +40,12 @@ public class Payment extends PanacheEntity {
         this.paymentStatus = PaymentStatus.CRIADO;
     }
     
+    public Payment(BigDecimal vlAmount, PaymentType paymentType) {
+        this.paymentId = new Date().getTime();
+        this.paymentStatus = PaymentStatus.CRIADO;
+        this.vlAmount = vlAmount;
+        this.paymentType = paymentType;
+    }
+    
 
 }
