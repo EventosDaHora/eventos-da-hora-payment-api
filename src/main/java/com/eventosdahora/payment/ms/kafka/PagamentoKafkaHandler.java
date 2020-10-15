@@ -22,12 +22,10 @@ public class PagamentoKafkaHandler {
     @Incoming("payments")
     @Outgoing("envia-resposta")
     @Acknowledgment(Acknowledgment.Strategy.PRE_PROCESSING)
-    public Uni<Message<OrderDTO>> processor(Message<OrderDTO> orderDTO) {
-        log.info("Pagamento que chegou do tópico 'executa-pagamento': " + orderDTO.getPayload());
+    public OrderDTO processor(OrderDTO orderDTO) throws Exception {
+        log.info("Pagamento que chegou do tópico 'executa-pagamento': " + orderDTO);
     
-        return paymentService
-                       .handleOrder(orderDTO.getPayload())
-                       .map(orderDTO::withPayload);
+        return paymentService.handleOrder(orderDTO);
     }
     
 }

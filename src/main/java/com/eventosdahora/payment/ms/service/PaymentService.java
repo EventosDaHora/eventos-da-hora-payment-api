@@ -17,16 +17,16 @@ import java.util.concurrent.CompletableFuture;
 @ApplicationScoped
 public class PaymentService {
 	
-	public Uni<OrderDTO> handleOrder(OrderDTO orderDTO) {
+	public OrderDTO handleOrder(OrderDTO orderDTO) throws Exception {
 		if (OrderEvent.PAGAR_TICKET.equals(orderDTO.getOrderEvent())) {
-			return Uni.createFrom().completionStage(CompletableFuture.supplyAsync(() -> pagarTicket(orderDTO)));
+			return pagarTicket(orderDTO);
 		}
 		
 		if (OrderEvent.RESTAURAR_PAGAR_TICKET.equals(orderDTO.getOrderEvent())) {
-			return Uni.createFrom().completionStage(CompletableFuture.supplyAsync(() -> restaurarPagarTicket(orderDTO)));
+			return restaurarPagarTicket(orderDTO);
 		}
 		
-		return Uni.createFrom().failure(() -> new Exception("Estado inválido"));
+		throw new Exception("Estado inválido");
 	}
 	
 	@Transactional
