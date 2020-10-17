@@ -1,5 +1,6 @@
 package com.eventosdahora.payment.ms.dominio;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.*;
 
@@ -10,19 +11,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@EqualsAndHashCode(callSuper = true)
+@Data
 @Builder
 @AllArgsConstructor
 @Entity
-@Data
 public class Payment extends PanacheEntity {
     
     @Column(name = "id_payment", length = 19)
-    public Long paymentId;
+    public Long id;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "dt_create")
     public LocalDateTime dtCreate;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "dt_payment")
     public LocalDateTime dtPayment;
     
@@ -36,12 +38,12 @@ public class Payment extends PanacheEntity {
     public PaymentType paymentType;
     
     public Payment() {
-        this.paymentId = new Date().getTime();
+        this.id = new Date().getTime();
         this.paymentStatus = PaymentStatus.CRIADO;
     }
     
     public Payment(BigDecimal vlAmount, PaymentType paymentType) {
-        this.paymentId = new Date().getTime();
+        this.id = new Date().getTime();
         this.paymentStatus = PaymentStatus.CRIADO;
         this.vlAmount = vlAmount;
         this.paymentType = paymentType;

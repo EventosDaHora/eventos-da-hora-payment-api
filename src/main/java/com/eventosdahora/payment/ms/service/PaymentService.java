@@ -66,7 +66,7 @@ public class PaymentService {
 		
 		payment.persist();
 		
-		orderDTO.getPayment().setPaymentId(payment.getPaymentId());
+		orderDTO.getPayment().setPaymentId(payment.getId());
 		log.info(orderDTO.toString());
 		return orderDTO;
 	}
