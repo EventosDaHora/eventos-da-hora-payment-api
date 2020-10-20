@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,7 +24,7 @@ public class OrderDTO {
 	
 	private Long orderId;
 	
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	
 	private LocalDateTime createdDate;
 	
@@ -33,6 +35,9 @@ public class OrderDTO {
 	private BigDecimal fees;
 	
 	private Long userId;
+	
+	@Builder.Default
+	private List<TicketDTO> tickets = new ArrayList<>();
 	
 	private PaymentDTO payment;
 	
