@@ -4,10 +4,12 @@ import com.eventosdahora.payment.ms.dominio.Payment;
 import com.eventosdahora.payment.ms.dominio.PaymentStatus;
 import com.eventosdahora.payment.ms.dto.OrderDTO;
 import com.eventosdahora.payment.ms.kafka.OrderEvent;
+import com.eventosdahora.payment.ms.repository.PaymentRepository;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.java.Log;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -16,6 +18,9 @@ import java.util.concurrent.CompletableFuture;
 @Log
 @ApplicationScoped
 public class PaymentService {
+	
+	@Inject
+	PaymentRepository paymentRepository;
 	
 	public OrderDTO handleOrder(OrderDTO orderDTO) throws Exception {
 		if (OrderEvent.PAGAR_TICKET.equals(orderDTO.getOrderEvent())) {
@@ -32,7 +37,7 @@ public class PaymentService {
 	@Transactional
 	private OrderDTO restaurarPagarTicket(OrderDTO orderDTO) {
 		try {
-			Payment.deleteById(orderDTO.getPayment().getPaymentId());
+			paymentRepository.deleteById(orderDTO.getPayment().getPaymentId());
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
 		} catch (PersistenceException pe) {
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
@@ -64,7 +69,7 @@ public class PaymentService {
 			payment.setDtPayment(LocalDateTime.now());
 		}
 		
-		payment.persist();
+		paymentRepository.persistAndFlush(payment);
 		
 		orderDTO.getPayment().setPaymentId(payment.getId());
 		log.info(orderDTO.toString());

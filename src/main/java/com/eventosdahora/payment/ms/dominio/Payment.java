@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -15,8 +13,11 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @Entity
-public class Payment extends PanacheEntity {
+public class Payment {
     
+    @Id
+    @SequenceGenerator(name = "seq_order", sequenceName = "seq_order", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_order")
     @Column(name = "id_payment", length = 19)
     public Long id;
     
@@ -43,7 +44,6 @@ public class Payment extends PanacheEntity {
     }
     
     public Payment(BigDecimal vlAmount, PaymentType paymentType) {
-        this.id = new Date().getTime();
         this.paymentStatus = PaymentStatus.CRIADO;
         this.vlAmount = vlAmount;
         this.paymentType = paymentType;
