@@ -1,6 +1,5 @@
 package com.eventosdahora.payment.ms.dto;
 
-import com.eventosdahora.payment.ms.dominio.Payment;
 import com.eventosdahora.payment.ms.kafka.OrderEvent;
 import com.eventosdahora.payment.ms.kafka.OrderState;
 import lombok.*;
@@ -30,6 +29,6 @@ public class OrderDTO {
 	
 	private Long userId;
 	
-	private Payment payment;
+	private PaymentDTO paymentDTO;
 	
 }

@@ -32,8 +32,13 @@ public class PaymentService {
 	@Transactional
 	private OrderDTO restaurarPagarTicket(OrderDTO orderDTO) {
 		try {
-			orderDTO.getPayment().delete();
-			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
+			Payment payment = orderDTO.getPaymentDTO().toEntity();
+			if(payment.isPersistent()) {
+				payment.delete();
+				orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
+			} else {
+				orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
+			}
 		} catch (PersistenceException pe) {
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
 			return orderDTO;
@@ -45,26 +50,33 @@ public class PaymentService {
 	
 	@Transactional
 	public OrderDTO pagarTicket(OrderDTO orderDTO) {
+		Payment payment = new Payment();
+		payment.id = null;
+
 		PaymentStatus paymentTemp;
 		
 		if (verifyPayment(orderDTO)) {
 			paymentTemp = PaymentStatus.PAGO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_APROVADO);
-			System.out.println("---- Pagamento APROVADO ");
+			log.info("---- Pagamento APROVADO ");
 		} else {
 			paymentTemp = PaymentStatus.PAGO_REJEITADO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_NEGADO);
-			System.out.println("---- Pagamento REPROVADO ");
+			log.info("---- Pagamento REPROVADO ");
 		}
 		
-		orderDTO.getPayment().setDtCreate(LocalDateTime.now());
-		orderDTO.getPayment().setPaymentStatus(paymentTemp);
+		payment.setDtCreate(LocalDateTime.now());
+
+		payment.setPaymentStatus(paymentTemp);
+
 		if(PaymentStatus.PAGO.equals(paymentTemp)) {
-			orderDTO.getPayment().setDtPayment(LocalDateTime.now());
+			payment.setDtPayment(LocalDateTime.now());
 		}
-		orderDTO.getPayment().persist();
+
+		payment.persist();
 		
 		log.info(orderDTO.toString());
+
 		return orderDTO;
 	}
 	

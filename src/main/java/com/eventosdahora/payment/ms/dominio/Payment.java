@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class Payment extends PanacheEntity {
     
     @Column(name = "id_payment", length = 19)
-    public Long paymentId;
+    public Long id;
     
     @Column(name = "dt_create")
     public LocalDateTime dtCreate;
