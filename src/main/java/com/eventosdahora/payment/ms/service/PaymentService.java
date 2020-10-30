@@ -4,10 +4,12 @@ import com.eventosdahora.payment.ms.dominio.Payment;
 import com.eventosdahora.payment.ms.dominio.PaymentStatus;
 import com.eventosdahora.payment.ms.dto.OrderDTO;
 import com.eventosdahora.payment.ms.kafka.OrderEvent;
+import com.eventosdahora.payment.ms.repository.PaymentRepository;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.java.Log;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -17,28 +19,26 @@ import java.util.concurrent.CompletableFuture;
 @ApplicationScoped
 public class PaymentService {
 	
-	public Uni<OrderDTO> handleOrder(OrderDTO orderDTO) {
+	@Inject
+	PaymentRepository paymentRepository;
+
+	public OrderDTO handleOrder(OrderDTO orderDTO) throws Exception {
 		if (OrderEvent.PAGAR_TICKET.equals(orderDTO.getOrderEvent())) {
-			return Uni.createFrom().completionStage(CompletableFuture.supplyAsync(() -> pagarTicket(orderDTO)));
+			return pagarTicket(orderDTO);
 		}
 		
 		if (OrderEvent.RESTAURAR_PAGAR_TICKET.equals(orderDTO.getOrderEvent())) {
-			return Uni.createFrom().completionStage(CompletableFuture.supplyAsync(() -> restaurarPagarTicket(orderDTO)));
+			return restaurarPagarTicket(orderDTO);
 		}
 		
-		return Uni.createFrom().failure(() -> new Exception("Estado inválido"));
+		throw new Exception("Estado inválido");
 	}
 	
 	@Transactional
 	private OrderDTO restaurarPagarTicket(OrderDTO orderDTO) {
 		try {
-			Payment payment = orderDTO.getPaymentDTO().toEntity();
-			if(payment.isPersistent()) {
-				payment.delete();
-				orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
-			} else {
-				orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
-			}
+			paymentRepository.deleteById(orderDTO.getPayment().getPaymentId());
+			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_APROVADO);
 		} catch (PersistenceException pe) {
 			orderDTO.setOrderEvent(OrderEvent.RESTAURAR_PAGAR_TICKET_NEGADO);
 			return orderDTO;
@@ -50,33 +50,29 @@ public class PaymentService {
 	
 	@Transactional
 	public OrderDTO pagarTicket(OrderDTO orderDTO) {
-		Payment payment = new Payment();
-		payment.id = null;
-
-		PaymentStatus paymentTemp;
+		PaymentStatus paymentStatus;
+		Payment payment = new Payment(orderDTO.getPayment().getVlAmount(), orderDTO.getPayment().getPaymentType());
 		
 		if (verifyPayment(orderDTO)) {
-			paymentTemp = PaymentStatus.PAGO;
+			paymentStatus = PaymentStatus.PAGO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_APROVADO);
-			log.info("---- Pagamento APROVADO ");
+			System.out.println("---- Pagamento APROVADO ");
 		} else {
-			paymentTemp = PaymentStatus.PAGO_REJEITADO;
+			paymentStatus = PaymentStatus.PAGO_REJEITADO;
 			orderDTO.setOrderEvent(OrderEvent.PAGAR_TICKET_NEGADO);
-			log.info("---- Pagamento REPROVADO ");
+			System.out.println("---- Pagamento REPROVADO ");
 		}
 		
 		payment.setDtCreate(LocalDateTime.now());
-
-		payment.setPaymentStatus(paymentTemp);
-
-		if(PaymentStatus.PAGO.equals(paymentTemp)) {
+		payment.setPaymentStatus(paymentStatus);
+		if(PaymentStatus.PAGO.equals(paymentStatus)) {
 			payment.setDtPayment(LocalDateTime.now());
 		}
-
-		payment.persist();
 		
-		log.info(orderDTO.toString());
+		paymentRepository.persistAndFlush(payment);
 
+		orderDTO.getPayment().setPaymentId(payment.getId());
+		log.info(orderDTO.toString());
 		return orderDTO;
 	}
 	
