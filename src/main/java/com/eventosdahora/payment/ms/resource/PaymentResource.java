@@ -5,12 +5,10 @@ import com.eventosdahora.payment.ms.repository.PaymentRepository;
 import lombok.extern.java.Log;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Log
 @Path("/payments")
@@ -20,6 +18,16 @@ public class PaymentResource {
 	
 	@Inject
 	PaymentRepository paymentRepository;
+	
+	@GET
+	@Path("/{paymentId}")
+	public Response getById(@PathParam("paymentId") Long paymentId) {
+		Optional<Payment> byIdOptional = paymentRepository.findByIdOptional(paymentId);
+		if(byIdOptional.isPresent())
+			return  Response.ok(byIdOptional.get()).build();
+		
+		return Response.status(Response.Status.NOT_FOUND).build();
+	}
 	
 	@GET
 	public Response getAll() {
