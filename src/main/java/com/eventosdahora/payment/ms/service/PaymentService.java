@@ -77,6 +77,6 @@ public class PaymentService {
 	private boolean verifyPayment(OrderDTO orderDTO) {
 		// orderId par, pagamento aprovado
 		// orderId impar, pagamento negado
-		return orderDTO.getOrderId() % 2 == 0;
+		return orderDTO.getOrderId() % 2 != 0;
 	}
 }
